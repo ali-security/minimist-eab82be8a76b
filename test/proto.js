@@ -42,3 +42,43 @@ test('proto pollution (constructor)', function (t) {
     t.equal(argv.y, undefined);
     t.end();
 });
+
+test('proto pollution (constructor function)', function (t) {
+    var argv = parse(['--_.concat.constructor.prototype.y', '123']);
+    function fnToBeTested() {}
+    t.equal(fnToBeTested.y, undefined);
+    t.equal((function () {}).y, undefined);
+    t.equal([].concat.y, undefined);
+    t.equal(Function.prototype.y, undefined);
+    t.equal(argv.y, undefined);
+    t.deepEqual(argv._, []);
+    t.end();
+});
+
+// powered by snyk - https://github.com/backstage/backstage/issues/10343
+test('proto pollution (constructor function) snyk', function (t) {
+    var argv = parse('--_.constructor.constructor.prototype.foo bar'.split(' '));
+    t.equal((function () {}).foo, undefined);
+    t.equal(Function.prototype.foo, undefined);
+    t.equal(argv.foo, undefined);
+    t.deepEqual(argv._, []);
+    t.end();
+});
+
+test('proto pollution (constructor function, --key=value form)', function (t) {
+    var argv = parse(['--_.concat.constructor.prototype.z=456']);
+    t.equal((function () {}).z, undefined);
+    t.equal(Function.prototype.z, undefined);
+    t.equal(argv.z, undefined);
+    t.deepEqual(argv._, []);
+    t.end();
+});
+
+test('proto pollution (constructor function, --no- form)', function (t) {
+    var argv = parse(['--no-_.constructor.constructor.prototype.w']);
+    t.equal((function () {}).w, undefined);
+    t.equal(Function.prototype.w, undefined);
+    t.equal(argv.w, undefined);
+    t.deepEqual(argv._, []);
+    t.end();
+});
